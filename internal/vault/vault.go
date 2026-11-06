@@ -38,9 +38,11 @@ var (
 	ErrIDsExhausted = errors.New("hit entry ids limit")
 )
 
-const MaxTitleLoginLen = 256
-const MaxDescLen = 4096
-const MaxPasswrodLen = 1024
+const (
+	MaxTitleLoginLen = 256
+	MaxDescLen       = 4096
+	MaxPasswrodLen   = 1024
+)
 
 func (v *Vault) Add(d EntryData, now time.Time) (uint32, error) {
 	err := d.validateInput()
