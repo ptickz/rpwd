@@ -7,24 +7,21 @@ linters:
     - nilerr
     - errorlint
     - wrapcheck
-    - bodyclose
-    - rowserrcheck
     - staticcheck
     - govet
     - errcheck
     - gosec
-    - wsl
+    - wsl_v5
 
 formatters:
-  default: none
   enable:
     - gci
   settings:
     gci:
       sections:
-        - Standard
-        - Default
-        - Prefix(password_manager)
+        - standard
+        - default
+        - prefix(github.com/ptickz/rpwd)
 run:
   timeout: 5m
-  tests: false
+  tests: true
