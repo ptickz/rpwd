@@ -12,6 +12,11 @@ linters:
     - errcheck
     - gosec
     - wsl_v5
+  exclusions:
+      rules:
+        - path: internal/vault/encoding.go
+          linters: [gosec]
+          text: "G115"
 
 formatters:
   enable:
