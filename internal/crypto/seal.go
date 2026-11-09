@@ -97,6 +97,7 @@ func Seal(h *Header, dek, payload []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("init aead: %w", err)
 	}
+
 	dst := make([]byte, 0, headerSize+len(payload)+tagSize)
 	dst = append(dst, hdr...)
 
