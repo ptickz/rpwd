@@ -1,3 +1,5 @@
+// Package vault holds password entries in memory
+// and serializes them to the binary payload format
 package vault
 
 import (
