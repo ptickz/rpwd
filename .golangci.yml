@@ -15,6 +15,9 @@ linters:
     - godot
     - revive
   settings:
+    wrapcheck:
+          ignore-package-globs:
+            - github.com/ptickz/rpwd/*
     revive:
       rules:
         - name: package-comments

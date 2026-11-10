@@ -20,6 +20,44 @@ var (
 	ErrExists         = errors.New("vault already exists")
 )
 
+func WriteNewFile(path string, data []byte) error {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		if errors.Is(err, fs.ErrExist) {
+			return ErrExists
+		}
+
+		return fmt.Errorf("create dump: %w", err)
+	}
+
+	ok := false
+	defer func() {
+		if !ok {
+			_ = f.Close()
+			_ = os.Remove(path)
+		}
+	}()
+
+	_, err = f.Write(data)
+	if err != nil {
+		return fmt.Errorf("write vault: %w", err)
+	}
+
+	err = f.Sync()
+	if err != nil {
+		return fmt.Errorf("sync vault: %w", err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		return fmt.Errorf("close vault: %w", err)
+	}
+
+	ok = true
+
+	return nil
+}
+
 func Read(path string) ([]byte, bool, error) {
 	f, err := os.Open(path)
 	if err != nil {
