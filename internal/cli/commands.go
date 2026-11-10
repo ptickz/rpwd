@@ -29,16 +29,16 @@ import (
 const maxDescWidth = 40
 
 var commands = []command{
-	{name: "ls", summary: "list entries", run: cmdLs},
 	{name: "init", summary: "create a new vault", run: cmdInit},
-	{name: "show", summary: "list entry by id", run: cmdShow},
-	{name: "add", summary: "add new entry to vault", run: cmdAdd},
-	{name: "edit", summary: "edit entry by id", run: cmdEdit},
-	{name: "rm", summary: "delete entry from vault", run: cmdRm},
-	{name: "lock", summary: "lock vault for agent", run: cmdLock},
-	{name: "status", summary: "create a new vault", run: cmdStatus},
+	{name: "ls", summary: "list entries", run: cmdLs},
+	{name: "show", summary: "<id> [--print]  show entry, copy password (--print: to stdout)", run: cmdShow},
+	{name: "add", summary: "add an entry (interactive)", run: cmdAdd},
+	{name: "edit", summary: "<id>  edit an entry, Enter keeps a value", run: cmdEdit},
+	{name: "rm", summary: "<id>  delete an entry", run: cmdRm},
 	{name: "passwd", summary: "change master password", run: cmdPasswd},
-	{name: "dump", summary: "make a dump file with vault data", run: cmdDump},
+	{name: "dump", summary: "<dir> [--decrypt]  dump vault to dir (--decrypt: plain CSV)", run: cmdDump},
+	// {name: "lock", summary: "lock vault for agent", run: cmdLock},
+	// {name: "status", summary: "create a new vault", run: cmdStatus},
 }
 
 type command struct {
@@ -202,11 +202,14 @@ func cmdShow(a *app, args []string) error {
 	} else {
 		_, _ = fmt.Fprintf(a.stdout, "title: %s\nlogin: %s\ndesc:  %s\n",
 			sanitize(entry.Data.Title), sanitize(entry.Data.Login), sanitize(entry.Data.Desc))
+
 		err := clipboard.Copy([]byte(entry.Data.Password))
 		if err != nil {
-			return err
+			return fmt.Errorf("%w (use --print)", err)
 		}
-		_, _ := fmt.Fprintln(a.stdout, "password copied to clipboard for 15 seconds")
+
+		_, _ = fmt.Fprintln(a.stderr, "password copied to clipboard")
+	}
 
 	return nil
 }
@@ -448,13 +451,13 @@ func cmdRm(a *app, args []string) error {
 	return nil
 }
 
-func cmdLock(a *app, args []string) error {
-	return errors.New("implement")
-}
+// func cmdLock(a *app, args []string) error {
+// 	return errors.New("implement")
+// }
 
-func cmdStatus(a *app, args []string) error {
-	return errors.New("implement")
-}
+// func cmdStatus(a *app, args []string) error {
+// 	return errors.New("implement")
+// }
 
 func cmdPasswd(a *app, args []string) error {
 	if len(args) > 0 {
@@ -557,8 +560,6 @@ func cmdDump(a *app, args []string) error {
 	ext := ".rpwd"
 
 	if !decrypt {
-		_, _ = fmt.Fprintln(a.stderr, "warning: passwords are stored in plain text, delete the file after use")
-
 		buf, warn, err := store.Read(a.vaultPath)
 		if err != nil {
 			return err
@@ -575,6 +576,8 @@ func cmdDump(a *app, args []string) error {
 
 		data = buf
 	} else {
+		_, _ = fmt.Fprintln(a.stderr, "warning: passwords are stored in plain text, delete the file after use")
+
 		dek, v, err := a.unlock()
 		if err != nil {
 			return err
