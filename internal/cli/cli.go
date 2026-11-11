@@ -21,6 +21,7 @@ type app struct {
 	vaultPath  string
 	backupsDir string
 	lockPath   string
+	socketPath string
 }
 
 func newApp(stdin io.Reader, stdout, stderr io.Writer) (*app, error) {
@@ -39,6 +40,11 @@ func newApp(stdin io.Reader, stdout, stderr io.Writer) (*app, error) {
 		return nil, fmt.Errorf("lock path: %w", err)
 	}
 
+	socketPath, err := paths.SocketFile()
+	if err != nil {
+		return nil, fmt.Errorf("socket path: %w", err)
+	}
+
 	return &app{
 		stdin:      stdin,
 		stdout:     stdout,
@@ -47,6 +53,7 @@ func newApp(stdin io.Reader, stdout, stderr io.Writer) (*app, error) {
 		vaultPath:  vaultPath,
 		backupsDir: backupsDir,
 		lockPath:   lockPath,
+		socketPath: socketPath,
 	}, nil
 }
 
@@ -95,7 +102,12 @@ func (a *app) printUsage() error {
 	w := bufio.NewWriter(a.stdout)
 
 	_, _ = fmt.Fprintln(w, "Available commands:")
+
 	for _, c := range commands {
+		if c.hidden {
+			continue
+		}
+
 		_, _ = fmt.Fprintf(w, "  %-8s %s\n", c.name, c.summary)
 	}
 
